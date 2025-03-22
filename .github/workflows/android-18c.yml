@@ -35,12 +35,11 @@ jobs:
         sudo apt-get install -qq libltdl-dev libx11-dev libgtk-3-dev libreadline-dev libsdl2-dev libasound-dev libvncserver-dev openjade docbook docbook-dsssl
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
         cd $GITHUB_WORKSPACE/kernel_workspace
-        wget https://dl.google.com/android/repository/android-ndk-r18b-linux.zip
-        unzip android-ndk-r18b-linux.zip && rm *.zip
+        wget https://dl.google.com/android/repository/android-ndk-r18b-linux-x86_64.zip
+        unzip android-ndk-r18b-linux-x86_64.zip && rm *.zip
         sudo mkdir -p /build/
         sudo mv android-ndk-r18b /android-ndk-r18b
       
-
   
 
     - name: build android bochs
