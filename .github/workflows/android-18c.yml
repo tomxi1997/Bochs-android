@@ -1,0 +1,76 @@
+name: Build android 18c
+on:
+  watch:
+    types: [started]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android bochs by ${{ github.actor }}
+    runs-on: ubuntu-20.04
+    if: github.event.repository.owner.id == github.event.sender.id
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+      CI: "false"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Prepare Configuration
+      run: |
+        echo "ENABLE_NETHUNTER=$(cat $CONFIG_ENV | grep -w "ENABLE_NETHUNTER" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        
+    - name: Set swap to 10G
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
+
+    - name: Setup build environment
+      run: |
+        echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
+        echo "DEVICE=$(echo ${{ env.KERNEL_CONFIG }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
+        sudo apt-get update
+        sudo apt install -y curl vim git gcc unzip wget make crossbuild-essential-amd64 ant 
+        sudo apt-get install -qq libltdl-dev libx11-dev libgtk-3-dev libreadline-dev libsdl2-dev libasound-dev libvncserver-dev openjade docbook docbook-dsssl
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        wget https://dl.google.com/android/repository/android-ndk-r18b-linux.zip
+        unzip android-ndk-r18b-linux.zip && rm *.zip
+        sudo mkdir -p /build/
+        sudo mv android-ndk-r18b /android-ndk-r18b
+      
+
+  
+
+    - name: build android bochs
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        ls /android-ndk-r18b/toolchains/llvm/prebuilt/linux-x86_64/bin
+        export API=21
+        export NDK=$GITHUB_WORKSPACE/kernel_workspace/android-ndk-r18b
+        export NDK_CROSS=${NDK}/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin
+        export SYSROOT=${NDK}/sysroot
+        export PATH=${PATH}:${NDK}:${NDK_CROSS}
+        
+        git clone https://github.com/tomxi1997/Bochs-android
+        cd Bochs-android/bochs 
+        export ARCH_CFLAG="-DANDROID_ARM64"
+        env CFLAGS="-Ofast -Wno-narrowing -DANDROID $ARCH_CFLAG" \
+        ./configure CC="aarch64-linux-android-gcc" CPP="aarch64-linux-android-gcc" CPPFLAGS="-I${SYSROOT}/usr/include" CXX="aarch64-linux-android-g++" CXXCPP="aarch64-linux-android-g++" --prefix=/data/bochs --build=x86_64-unknown-linux-gnu --host=aarch64-linux-android \
+        --with-nogui --enable-cpu-level=6 --enable-x86-64 --enable-vmx=2 --enable-avx --enable-evex --enable-sb16 --enable-es1370 --enable-ne2000 --enable-pnic --enable-e1000 --enable-clgd54xx --enable-voodoo \
+        --enable-all-optimizations --enable-usb --enable-usb-ohci --enable-usb-ehci --enable-usb-xhci --enable-busmouse --enable-large-ramfile --disable-gameport --disable-docbook 
+        make -j8 && make install 
+
+    - name: add bochs tar
+      run: |
+        sudo bash -c 'cd /data && tar -czvf bochs.tar.xz bochs && cp bochs.tar.xz /home/runner/work/Bochs-android/Bochs-android/kernel_workspace'
+    
+
+    - name: Upload bochs
+      uses: actions/upload-artifact@v4
+      with:
+        name: bochs-android-arm64
+        path: kernel_workspace/bochs.tar.xz
+
+  
