@@ -57,8 +57,8 @@ jobs:
         
         git clone https://github.com/tomxi1997/Bochs-android
         cd Bochs-android/bochs 
-        mkdir build
-        cd build
+        mkdir builda
+        cd builda
         export ANDROID_NDK_HOME=$GITHUB_WORKSPACE/kernel_workspace/android-ndk-r25c
         export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
         cmake .. -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DANDROID_ABI=armeabi-v7a -DANDROID_PLATFORM=android-21
