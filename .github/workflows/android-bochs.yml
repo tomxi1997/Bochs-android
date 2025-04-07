@@ -63,7 +63,8 @@ jobs:
         env CLANG=1 ./configure --host=aarch64-linux-android CC="aarch64-linux-android21-clang" CPP="aarch64-linux-android21-clang -E" CPPFLAGS="-I${SYSROOT}/usr/include" CXX="aarch64-linux-android21-clang++" CXXCPP="aarch64-linux-android21-clang++ -E" --prefix=/data/bochs --build=x86_64-unknown-linux-gnu --host=aarch64-linux-android21 \
         --with-nogui --enable-cpu-level=6 --enable-x86-64 --enable-vmx=2 --enable-avx --enable-evex --enable-sb16 --enable-es1370 --enable-ne2000 --enable-pnic --enable-e1000 --enable-clgd54xx --enable-voodoo \
         --enable-all-optimizations --enable-usb --enable-usb-ohci --enable-usb-ehci --enable-usb-xhci --enable-busmouse --enable-large-ramfile --disable-gameport --disable-docbook 
-        make -j8 && make install 
+        make -j8 && cat config.log 
+        make install 
 
     - name: add bochs tar
       run: |
