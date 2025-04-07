@@ -5530,9 +5530,9 @@ int13_edd(DS, SI, device)
 
     if (type == ATA_TYPE_ATAPI)
     {
-      npc     = 0xffffffff;
-      nph     = 0xffffffff;
-      npspt   = 0xffffffff;
+      npc     = 0xffff;
+      nph     = 0xffff;
+      npspt   = 0xffff;
       lba_low = 0xffffffff;
       lba_high = 0xffffffff;
 
@@ -5688,7 +5688,7 @@ int13_harddisk(DS, ES, DI, SI, BP, ELDX, BX, DX, CX, AX, IP, CS, FLAGS)
   Bit32u lba_low, lba_high;
   Bit16u cylinder, head, sector;
   Bit16u segment, offset;
-  Bit16u npc, nph, npspt, nlc, nlh, nlspt;
+  Bit16u nph, npspt, nlc, nlh, nlspt;
   Bit16u size, count;
   Bit8u  device, status;
 
@@ -10136,7 +10136,7 @@ pci_real_f0e: ;; get irq routing options
   pop es
   popf
   pop ax
-  mov bx, #(1 << 9) | (1 << 11)   ;; irq 9 and 11 are used
+  mov bx, #(1 << 11) | (1 << 9)  ;; irqs 9 and 11 are used
   jmp pci_real_ok
 pci_real_too_small:
   stosw
@@ -10303,7 +10303,7 @@ pci_routing_table_structure_end:
 
 #if !BX_ROMBIOS32
 pci_irq_list:
-  db 11, 10, 9, 5;
+  db 11, 9, 11, 9;
 
 pcibios_init_sel_reg:
   push eax
